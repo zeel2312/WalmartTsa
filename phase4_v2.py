@@ -216,10 +216,10 @@ if st.sidebar.checkbox("Show Decomposition"):
         st.pyplot(plt)
 
 # Add dropdown menu for selecting LSTM changes
-if st.sidebar.checkbox("Choose LSTM Predictions", key='compare_lstm_changes'):
-    selected_lstm_change = st.selectbox("Select Data Changes for LSTM", ["None", "Increase Temperature", "Decrease Temperature", "Increase Fuel Price", "Decrease Fuel Price", "Increase CPI", "Decrease CPI", "Increase Unemployment", "Decrease Unemployment"])
+# if st.sidebar.checkbox("Choose LSTM Predictions", key='compare_lstm_changes'):
+#     selected_lstm_change = st.selectbox("Select Data Changes for LSTM", ["None", "Increase Temperature", "Decrease Temperature", "Increase Fuel Price", "Decrease Fuel Price", "Increase CPI", "Decrease CPI", "Increase Unemployment", "Decrease Unemployment"])
 
-# Show LSTM and changes
+# Show LSTM
 if st.sidebar.checkbox("Show LSTM"):
     st.subheader("LSTM Model Predictions")
     st.write("Please allow up to 10 minutes for predictions.")
@@ -282,176 +282,192 @@ if st.sidebar.checkbox("Show LSTM"):
 
         return train_new, actual_new, pred_new, new_index
     
-    def temp_change(change, df):
-        if change == "increase":
-            df_temp_inc = df.copy(deep=True)
-            df_temp_inc_work = df_temp_inc.sample(frac = 0.5)
-            temp_inc = df_temp_inc_work["Temperature"] + 10
-            df_temp_inc_work["Temperature"] = temp_inc
-            df_temp_inc.update(df_temp_inc_work)
-            return df_temp_inc
-        elif change == "decrease":
-            df_temp_dec = df.copy(deep=True)
-            df_temp_dec_work = df_temp_dec.sample(frac = 0.5)
-            temp_dec = df_temp_dec_work["Temperature"] - 10
-            df_temp_dec_work["Temperature"] = temp_dec
-            df_temp_dec.update(df_temp_dec_work)
-            return df_temp_dec
-        
-    def fuel_change(change, df):
-        if change == "increase":
-            df_fuel_inc = df.copy(deep=True)
-            df_fuel_inc_work = df_fuel_inc.sample(frac = 0.5)
-            fuel_inc = df_fuel_inc_work["Fuel_Price"] + 1
-            df_fuel_inc_work["Fuel_Price"] = fuel_inc
-            df_fuel_inc.update(df_fuel_inc_work)
-            return df_fuel_inc
-        elif change == "decrease":
-            df_fuel_dec = df.copy(deep=True)
-            df_fuel_dec_work = df_fuel_dec.sample(frac = 0.5)
-            fuel_dec = df_fuel_dec_work["Fuel_Price"] - 1
-            df_fuel_dec_work["Fuel_Price"] = fuel_dec
-            df_fuel_dec.update(df_fuel_dec_work)
-            return df_fuel_dec
-
-    def cpi_change(change, df):
-        if change == "increase":
-            df_cpi_inc = df.copy(deep=True)
-            df_cpi_inc_work = df_cpi_inc.sample(frac = 0.5)
-            cpi_inc = df_cpi_inc_work["CPI"] + 25
-            df_cpi_inc_work["CPI"] = cpi_inc
-            df_cpi_inc.update(df_cpi_inc_work)
-            return df_cpi_inc
-        elif change == "decrease":
-            df_cpi_dec = df.copy(deep=True)
-            df_cpi_dec_work = df_cpi_dec.sample(frac = 0.5)
-            cpi_dec = df_cpi_dec_work["CPI"] - 25
-            df_cpi_dec_work["CPI"] = cpi_dec
-            df_cpi_dec.update(df_cpi_dec_work)
-            return df_cpi_dec
+    train_new, actual_new, pred_new, new_index = predictions(df_lstm)
+    plot_data = pd.DataFrame({
+        'training': train_new,
+        'actual': actual_new,
+        'forecast': pred_new,
+        'index': new_index
+        })
+    plot_data_melted = plot_data.melt(id_vars='index', var_name='Type', value_name='Value')
+    fig = px.line(plot_data_melted, x='index', y='Value', color='Type', title='Forecast vs Actuals',
+                    color_discrete_map={
+                        'training': 'blue',
+                        'actual': 'green',
+                        'forecast': 'red',
+                        })
+    st.plotly_chart(fig)
     
-    def unemployment_change(change, df):
-        if change == "increase":
-            df_unemp_inc = df.copy(deep=True)
-            df_unemp_inc_work = df_unemp_inc.sample(frac = 0.5)
-            unemp_inc = df_unemp_inc_work["Unemployment"] + 1
-            df_unemp_inc_work["Unemployment"] = unemp_inc
-            df_unemp_inc.update(df_unemp_inc_work)
-            return df_unemp_inc
-        elif change == "decrease":
-            df_unemp_dec = df.copy(deep=True)
-            df_unemp_dec_work = df_unemp_dec.sample(frac = 0.5)
-            unemp_dec = df_unemp_dec_work["Unemployment"] - 1
-            df_unemp_dec_work["Unemployment"] = unemp_dec
-            df_unemp_dec.update(df_unemp_dec_work)
-            return df_unemp_dec
+    # def temp_change(change, df):
+    #     if change == "increase":
+    #         df_temp_inc = df.copy(deep=True)
+    #         df_temp_inc_work = df_temp_inc.sample(frac = 0.5)
+    #         temp_inc = df_temp_inc_work["Temperature"] + 10
+    #         df_temp_inc_work["Temperature"] = temp_inc
+    #         df_temp_inc.update(df_temp_inc_work)
+    #         return df_temp_inc
+    #     elif change == "decrease":
+    #         df_temp_dec = df.copy(deep=True)
+    #         df_temp_dec_work = df_temp_dec.sample(frac = 0.5)
+    #         temp_dec = df_temp_dec_work["Temperature"] - 10
+    #         df_temp_dec_work["Temperature"] = temp_dec
+    #         df_temp_dec.update(df_temp_dec_work)
+    #         return df_temp_dec
         
-    def change_predictions(df, change_type, change):
-        if change_type == "Temperature":
-            if change == "increase":
-                change_df = temp_change(change, df)
-                train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
-                temp_pred = pred_new_change
-                return temp_pred
-            elif change == "decrease":
-                change_df = temp_change(change, df)
-                train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
-                temp_pred = pred_new_change
-                return temp_pred
+    # def fuel_change(change, df):
+    #     if change == "increase":
+    #         df_fuel_inc = df.copy(deep=True)
+    #         df_fuel_inc_work = df_fuel_inc.sample(frac = 0.5)
+    #         fuel_inc = df_fuel_inc_work["Fuel_Price"] + 1
+    #         df_fuel_inc_work["Fuel_Price"] = fuel_inc
+    #         df_fuel_inc.update(df_fuel_inc_work)
+    #         return df_fuel_inc
+    #     elif change == "decrease":
+    #         df_fuel_dec = df.copy(deep=True)
+    #         df_fuel_dec_work = df_fuel_dec.sample(frac = 0.5)
+    #         fuel_dec = df_fuel_dec_work["Fuel_Price"] - 1
+    #         df_fuel_dec_work["Fuel_Price"] = fuel_dec
+    #         df_fuel_dec.update(df_fuel_dec_work)
+    #         return df_fuel_dec
+
+    # def cpi_change(change, df):
+    #     if change == "increase":
+    #         df_cpi_inc = df.copy(deep=True)
+    #         df_cpi_inc_work = df_cpi_inc.sample(frac = 0.5)
+    #         cpi_inc = df_cpi_inc_work["CPI"] + 25
+    #         df_cpi_inc_work["CPI"] = cpi_inc
+    #         df_cpi_inc.update(df_cpi_inc_work)
+    #         return df_cpi_inc
+    #     elif change == "decrease":
+    #         df_cpi_dec = df.copy(deep=True)
+    #         df_cpi_dec_work = df_cpi_dec.sample(frac = 0.5)
+    #         cpi_dec = df_cpi_dec_work["CPI"] - 25
+    #         df_cpi_dec_work["CPI"] = cpi_dec
+    #         df_cpi_dec.update(df_cpi_dec_work)
+    #         return df_cpi_dec
+    
+    # def unemployment_change(change, df):
+    #     if change == "increase":
+    #         df_unemp_inc = df.copy(deep=True)
+    #         df_unemp_inc_work = df_unemp_inc.sample(frac = 0.5)
+    #         unemp_inc = df_unemp_inc_work["Unemployment"] + 1
+    #         df_unemp_inc_work["Unemployment"] = unemp_inc
+    #         df_unemp_inc.update(df_unemp_inc_work)
+    #         return df_unemp_inc
+    #     elif change == "decrease":
+    #         df_unemp_dec = df.copy(deep=True)
+    #         df_unemp_dec_work = df_unemp_dec.sample(frac = 0.5)
+    #         unemp_dec = df_unemp_dec_work["Unemployment"] - 1
+    #         df_unemp_dec_work["Unemployment"] = unemp_dec
+    #         df_unemp_dec.update(df_unemp_dec_work)
+    #         return df_unemp_dec
+        
+    # def change_predictions(df, change_type, change):
+    #     if change_type == "Temperature":
+    #         if change == "increase":
+    #             change_df = temp_change(change, df)
+    #             train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
+    #             temp_pred = pred_new_change
+    #             return temp_pred
+    #         elif change == "decrease":
+    #             change_df = temp_change(change, df)
+    #             train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
+    #             temp_pred = pred_new_change
+    #             return temp_pred
             
-        elif change_type == "Fuel Price":
-            if change == "increase":
-                change_df = fuel_change(change, df)
-                train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
-                fuel_pred = pred_new_change
-                return fuel_pred
-            elif change == "decrease":
-                change_df = fuel_change(change, df)
-                train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
-                fuel_pred = pred_new_change
-                return fuel_pred
+    #     elif change_type == "Fuel Price":
+    #         if change == "increase":
+    #             change_df = fuel_change(change, df)
+    #             train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
+    #             fuel_pred = pred_new_change
+    #             return fuel_pred
+    #         elif change == "decrease":
+    #             change_df = fuel_change(change, df)
+    #             train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
+    #             fuel_pred = pred_new_change
+    #             return fuel_pred
             
-        elif change_type == "CPI":
-            if change == "increase":
-                change_df = cpi_change(change, df)
-                train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
-                cpi_pred = pred_new_change
-                return cpi_pred
-            elif change == "decrease":
-                change_df = cpi_change(change, df)
-                train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
-                cpi_pred = pred_new_change
-                return cpi_pred
+    #     elif change_type == "CPI":
+    #         if change == "increase":
+    #             change_df = cpi_change(change, df)
+    #             train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
+    #             cpi_pred = pred_new_change
+    #             return cpi_pred
+    #         elif change == "decrease":
+    #             change_df = cpi_change(change, df)
+    #             train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
+    #             cpi_pred = pred_new_change
+    #             return cpi_pred
             
-        elif change_type == "Unemployment":
-            if change == "increase":
-                change_df = unemployment_change(change, df)
-                train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
-                unemp_pred = pred_new_change
-                return unemp_pred
-            elif change == "decrease":
-                change_df = unemployment_change(change, df)
-                train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
-                unemp_pred = pred_new_change
-                return unemp_pred
+    #     elif change_type == "Unemployment":
+    #         if change == "increase":
+    #             change_df = unemployment_change(change, df)
+    #             train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
+    #             unemp_pred = pred_new_change
+    #             return unemp_pred
+    #         elif change == "decrease":
+    #             change_df = unemployment_change(change, df)
+    #             train_new_change, actual_new_change, pred_new_change, new_index_change = predictions(change_df)
+    #             unemp_pred = pred_new_change
+    #             return unemp_pred
             
-    def changes_plot(df, change, direction):
-        train_new, actual_new, pred_new, new_index = predictions(df)
-        change_pred = change_predictions(df, change, direction)
-        plot_data = pd.DataFrame({
-            'training': train_new,
-            'actual': actual_new,
-            'forecast': pred_new,
-            'changed forecast': change_pred,
-            'index': new_index
-            })
-        plot_data_melted = plot_data.melt(id_vars='index', var_name='Type', value_name='Value')
-        fig = px.line(plot_data_melted, x='index', y='Value', color='Type', title='Forecast vs Actuals',
-                      color_discrete_map={
-                          'training': 'blue',
-                          'actual': 'green',
-                          'forecast': 'red',
-                          'changed forecast': 'orange'
-                          })
-        st.plotly_chart(fig)
+    # def changes_plot(df, change, direction):
+    #     train_new, actual_new, pred_new, new_index = predictions(df)
+    #     change_pred = change_predictions(df, change, direction)
+    #     plot_data = pd.DataFrame({
+    #         'training': train_new,
+    #         'actual': actual_new,
+    #         'forecast': pred_new,
+    #         'changed forecast': change_pred,
+    #         'index': new_index
+    #         })
+    #     plot_data_melted = plot_data.melt(id_vars='index', var_name='Type', value_name='Value')
+    #     fig = px.line(plot_data_melted, x='index', y='Value', color='Type', title='Forecast vs Actuals',
+    #                   color_discrete_map={
+    #                       'training': 'blue',
+    #                       'actual': 'green',
+    #                       'forecast': 'red',
+    #                       'changed forecast': 'orange'
+    #                       })
+    #     st.plotly_chart(fig)
             
-    if selected_lstm_change == "None":
-        train_new, actual_new, pred_new, new_index = predictions(df_lstm)
-        plot_data = pd.DataFrame({
-            'training': train_new,
-            'actual': actual_new,
-            'forecast': pred_new,
-            'index': new_index
-            })
-        plot_data_melted = plot_data.melt(id_vars='index', var_name='Type', value_name='Value')
-        fig = px.line(plot_data_melted, x='index', y='Value', color='Type', title='Forecast vs Actuals',
-                      color_discrete_map={
-                          'training': 'blue',
-                          'actual': 'green',
-                          'forecast': 'red',
-                          })
-        st.plotly_chart(fig)
+    # if selected_lstm_change == "None":
+    #     train_new, actual_new, pred_new, new_index = predictions(df_lstm)
+    #     plot_data = pd.DataFrame({
+    #         'training': train_new,
+    #         'actual': actual_new,
+    #         'forecast': pred_new,
+    #         'index': new_index
+    #         })
+    #     plot_data_melted = plot_data.melt(id_vars='index', var_name='Type', value_name='Value')
+    #     fig = px.line(plot_data_melted, x='index', y='Value', color='Type', title='Forecast vs Actuals',
+    #                   color_discrete_map={
+    #                       'training': 'blue',
+    #                       'actual': 'green',
+    #                       'forecast': 'red',
+    #                       })
+    #     st.plotly_chart(fig)
 
-    elif selected_lstm_change == "Increase Temperature":
-        changes_plot(df_lstm, "Temperature", "increase")
+    # elif selected_lstm_change == "Increase Temperature":
+    #     changes_plot(df_lstm, "Temperature", "increase")
 
-    elif selected_lstm_change == "Decrease Temperature":
-        changes_plot(df_lstm, "Temperature", "decrease")
+    # elif selected_lstm_change == "Decrease Temperature":
+    #     changes_plot(df_lstm, "Temperature", "decrease")
 
-    elif selected_lstm_change == "Increase Fuel Price":
-        changes_plot(df_lstm, "Fuel Price", "increase")
+    # elif selected_lstm_change == "Increase Fuel Price":
+    #     changes_plot(df_lstm, "Fuel Price", "increase")
 
-    elif selected_lstm_change == "Decrease Fuel Price":
-        changes_plot(df_lstm, "Fuel Price", "decrease")
+    # elif selected_lstm_change == "Decrease Fuel Price":
+    #     changes_plot(df_lstm, "Fuel Price", "decrease")
 
-    elif selected_lstm_change == "Increase CPI":
-        changes_plot(df_lstm, "CPI", "increase")
+    # elif selected_lstm_change == "Increase CPI":
+    #     changes_plot(df_lstm, "CPI", "increase")
 
-    elif selected_lstm_change == "Decrease CPI":
-        changes_plot(df_lstm, "CPI", "decrease")
+    # elif selected_lstm_change == "Decrease CPI":
+    #     changes_plot(df_lstm, "CPI", "decrease")
 
-    elif selected_lstm_change == "Increase Unemployment":
-        changes_plot(df_lstm, "Unemployment", "increase")
+    # elif selected_lstm_change == "Increase Unemployment":
+    #     changes_plot(df_lstm, "Unemployment", "increase")
 
-    elif selected_lstm_change == "Decrease Unemployment":
-        changes_plot(df_lstm, "Unemployment", "decrease")
+    # elif selected_lstm_change == "Decrease Unemployment":
+    #     changes_plot(df_lstm, "Unemployment", "decrease")
