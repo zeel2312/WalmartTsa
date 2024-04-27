@@ -42,7 +42,8 @@ if fl is not None:
     st.write(filename)
     df = pd.read_csv(filename)
 else:
-    df = pd.read_csv("./walmart-sales-dataset-of-45stores.csv")
+    os.chdir(r"C:\Users\knkne\OneDrive\Documents\IU\Spring 24\Time Series\Project\phase 3")
+    df = pd.read_csv("walmart-sales-dataset-of-45stores.csv")
 
 col1, col2 = st.columns((2))
 df["Date"] = pd.to_datetime(df["Date"], format='%d-%m-%Y')
@@ -72,15 +73,11 @@ if st.sidebar.checkbox("Dataset"):
 
 # Add dropdown menu for selecting statistics in checkbox 2
 if st.sidebar.checkbox("View Statistics", key='stats_checkbox_2'):
-    selected_stat_2 = st.selectbox("Select Statistics for Checkbox 2", ["Skewness", "Outlier Boxplots", "Shape", "Description", "Null Values"])
+    selected_stat_2 = st.selectbox("Select Statistics for Checkbox 2", ["Outlier Boxplots", "Shape", "Description", "Null Values"])
 
 # Show selected statistics if checkbox 2 is selected
 if st.sidebar.checkbox("Show Chosen Statistics", key='show_stats_checkbox_2'):
-    if selected_stat_2 == "Skewness":
-        st.write("Skewness of the Dataset")
-        st.write(df.skew())
-
-    elif selected_stat_2 == "Outlier Boxplots":
+    if selected_stat_2 == "Outlier Boxplots":
         st.write("Outlier Boxplots for Every Column")
         for col in df.columns:
             st.write(f"Column: {col}")
@@ -122,6 +119,7 @@ if st.sidebar.checkbox("Show Distribution"):
             st.write(" ")
             st.write(f"Skewness of {col}: {skewness}")
 
+
 # Add dropdown menu for selecting statistics in checkbox 4
 if st.sidebar.checkbox("Comparison Graphs", key='graphs_for_comparison'):
     selected_stat_4 = st.selectbox("Graphs for Comparison", ["Fuel_Price vs CPI", "Change CPI per Week", "CPI vs Unemployment over Time", "Average Weekly Sales by Store", "Average Weekly Sales by Store over Time", "Weekly_sales vs Unemployement in stores", "Weekly_sales vs Fuel_Price", "Weekly_sales vs Temperature", "Weekly_sales vs holiday_flag", "Pearson Correlation Coefficient"])
@@ -131,54 +129,54 @@ if st.sidebar.checkbox("Show Comparison Graph"):
     if selected_stat_4 == "Fuel_Price vs CPI":
         st.write("Graph for Fuel_Price vs CPI")
         fig = px.scatter(df, x='CPI', y='Fuel_Price', title='Fuel_Price vs CPI')
-        fig.show()
+        st.plotly_chart(fig)
 
     elif selected_stat_4 == "Change CPI per Week":
         st.write("Graph for Change CPI per Week")
         df_3 = df.groupby('Date')[['CPI']].sum()
         fig = px.line(df_3, x=df_3.index, y=df_3['CPI'], title='change CPI per week')
-        fig.show()
+        st.plotly_chart(fig)
 
     elif selected_stat_4 == "CPI vs Unemployment over Time":
         st.write("Graph for CPI vs Unemployment over Time")
-        fig = px.scatter(df, x='CPI', y='Unemployement', title=' CPI vs Unemployment over Time')
-        fig.show()
+        fig = px.scatter(df, x='CPI', y='Unemployment', title=' CPI vs Unemployment over Time')
+        st.plotly_chart(fig)
 
     elif selected_stat_4 == "Average Weekly Sales by Store":
         st.write("Graph for Average Weekly Sales by Store") 
         df_grouped = df.groupby(['Date', 'Store'])['Weekly_Sales'].mean().unstack().reset_index()
         fig = px.line(df_grouped, x='Date', y=df_grouped.columns[1:], title='Average Weekly Sales by Store over Time')
         fig.update_layout(xaxis_title='Date', yaxis_title='Average Weekly Sales')
-        fig.show()
+        st.plotly_chart(fig)
 
     elif selected_stat_4 == "Average Weekly Sales by Store over Time":
         st.write("Graph for Average Weekly Sales by Store over Time")
         fig = px.line(df.groupby('Date')['Weekly_Sales'].mean(), title='Average Weekly Sales over Time')
         fig.update_layout(xaxis_title='Date', yaxis_title='Average Weekly Sales')
-        fig.show()
+        st.plotly_chart(fig)
 
     elif selected_stat_4 == "Weekly_sales vs Unemployement in stores":
         st.write("Graph for Weekly_sales vs Unemployement in stores")
         plt.figure(figsize = (20,5))
         fig = px.scatter(df, x="Weekly_Sales", y='Unemployment', color="Store", title="Relation between Unemployment and weeklysales within stores" , color_continuous_scale=px.colors.sequential.Viridis)
-        fig.show()
+        st.plotly_chart(fig)
 
     elif selected_stat_4 == "Weekly_sales vs Fuel_Price":
         st.write("Graph for Weekly_sales vs Fuel_Price")
         fig = px.scatter(df, x="Fuel_Price", y="Weekly_Sales", title="Weekly Sales vs Fuel Price")
-        fig.show()
+        st.plotly_chart(fig)
 
     elif selected_stat_4 == "Weekly_sales vs Temperature":
         st.write("Graph for Weekly_sales vs Temperature")
         plt.figure(figsize = (20,5))
         fig = px.scatter(df, x="Weekly_Sales", y="Temperature", color="Store", title="Relation between Temperature and weeklysales within stores")
-        fig.show()
+        st.plotly_chart(fig)
 
     elif selected_stat_4 == "Weekly_sales vs holiday_flag":
         st.write("Graph for Weekly_sales vs holiday_flag")
         plt.figure(figsize = (20,5))
         fig = px.strip(df, x="Weekly_Sales", y="Holiday_Flag", orientation="h", color="Store" , title = 'relation between weekly sales and holiday_flag')
-        fig.show()
+        st.plotly_chart(fig)
 
     elif selected_stat_4 == "Pearson Correlation Coefficient":
         st.write("Graph for Pearson Correlation Coefficient")
@@ -196,7 +194,7 @@ if st.sidebar.checkbox("Show Comparison Graph"):
                 title='Pearson Correlation Coefficients Between Columns',
                 color_continuous_scale='RdBu_r')
 
-        fig.show()
+        st.plotly_chart(fig)
 
 # Add dropdown menu for decompositions
 if st.sidebar.checkbox("Choose Decomposition", key="decomposition"):
@@ -416,7 +414,7 @@ if st.sidebar.checkbox("Show LSTM"):
                           'forecast': 'red',
                           'changed forecast': 'orange'
                           })
-        fig.show()
+        st.plotly_chart(fig)
             
     if selected_lstm_change == "None":
         train_new, actual_new, pred_new, new_index = predictions(df_lstm)
@@ -433,7 +431,7 @@ if st.sidebar.checkbox("Show LSTM"):
                           'actual': 'green',
                           'forecast': 'red',
                           })
-        fig.show()
+        st.plotly_chart(fig)
 
     elif selected_lstm_change == "Increase Temperature":
         changes_plot(df_lstm, "Temperature", "increase")
