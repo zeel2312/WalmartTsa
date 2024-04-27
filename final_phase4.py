@@ -42,8 +42,7 @@ if fl is not None:
     st.write(filename)
     df = pd.read_csv(filename)
 else:
-    os.chdir(r"C:\Users\knkne\OneDrive\Documents\IU\Spring 24\Time Series\Project\phase 3")
-    df = pd.read_csv("walmart-sales-dataset-of-45stores.csv")
+    df = pd.read_csv("./walmart-sales-dataset-of-45stores.csv")
 
 col1, col2 = st.columns((2))
 df["Date"] = pd.to_datetime(df["Date"], format='%d-%m-%Y')
