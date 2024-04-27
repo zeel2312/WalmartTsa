@@ -42,7 +42,8 @@ if fl is not None:
     st.write(filename)
     df = pd.read_csv(filename)
 else:
-    df = pd.read_csv("./walmart-sales-dataset-of-45stores.csv")
+    os.chdir(r"C:\Users\knkne\OneDrive\Documents\IU\Spring 24\Time Series\Project\phase 3")
+    df = pd.read_csv("walmart-sales-dataset-of-45stores.csv")
 
 col1, col2 = st.columns((2))
 df["Date"] = pd.to_datetime(df["Date"], format='%d-%m-%Y')
@@ -76,6 +77,7 @@ if st.sidebar.checkbox("View Statistics", key='stats_checkbox_2'):
 
 # Show selected statistics if checkbox 2 is selected
 if st.sidebar.checkbox("Show Chosen Statistics", key='show_stats_checkbox_2'):
+    st.write("There is a known memory issue. If the web page crashes, please reload and return to this feature without observing the other features first.")
     if selected_stat_2 == "Outlier Boxplots":
         st.write("Outlier Boxplots for Every Column")
         for col in df.columns:
@@ -102,6 +104,7 @@ if st.sidebar.checkbox("Sales Distribution by Store", key='sales_distribution_ch
 
 # Show selected statistics if checkbox 3 is selected
 if st.sidebar.checkbox("Show Distribution"):
+    st.write("There is a known memory issue. If the web page crashes, please reload and return to this feature without observing the other features first.")
     if selected_stat_3 == "Distribution of Data and Skewness Score of every column":
         st.write("Distribution of Data for Every Column")
         # Creating a new DataFrame with only the numeric columns leaving categorical ones out
@@ -125,6 +128,7 @@ if st.sidebar.checkbox("Comparison Graphs", key='graphs_for_comparison'):
 
 # Show selected statistics if checkbox 4 is selected
 if st.sidebar.checkbox("Show Comparison Graph"):
+    st.write("There is a known memory issue. If the web page crashes, please reload and return to this feature without observing the other features first.")
     if selected_stat_4 == "Fuel_Price vs CPI":
         st.write("Graph for Fuel_Price vs CPI")
         fig = px.scatter(df, x='CPI', y='Fuel_Price', title='Fuel_Price vs CPI')
@@ -201,6 +205,7 @@ if st.sidebar.checkbox("Choose Decomposition", key="decomposition"):
 
 # Show decompositions
 if st.sidebar.checkbox("Show Decomposition"):
+    st.write("There is a known memory issue. If the web page crashes, please reload and return to this feature without observing the other features first.")
     if selected_decomposition == "Additive":
         st.write("Additive Decomposition Plots")
         additive_decomposition = seasonal_decompose(df['Weekly_Sales'], model='additive', period=300)
@@ -221,6 +226,7 @@ if st.sidebar.checkbox("Show Decomposition"):
 
 # Show LSTM
 if st.sidebar.checkbox("Show LSTM"):
+    st.write("There is a known memory issue. If the web page crashes, please reload and return to this feature without observing the other features first.")
     st.subheader("LSTM Model Predictions")
     st.write("Please allow up to 10 minutes for predictions.")
     df_lstm = df.drop(["Store"], axis = 1)
@@ -253,7 +259,7 @@ if st.sidebar.checkbox("Show LSTM"):
         opt = keras.optimizers.AdamW(learning_rate=0.01)
         model.compile(optimizer=opt, loss='mse')
 
-        model.fit(x_train, y_train, epochs=20, verbose=0)
+        model.fit(x_train, y_train, epochs=100, verbose=0)
 
         y_pred = model.predict(x_test, verbose=0)
         y_pred = y_pred.astype("float64")
