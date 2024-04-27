@@ -253,7 +253,7 @@ if st.sidebar.checkbox("Show LSTM"):
         opt = keras.optimizers.AdamW(learning_rate=0.01)
         model.compile(optimizer=opt, loss='mse')
 
-        model.fit(x_train, y_train, epochs=200, verbose=0)
+        model.fit(x_train, y_train, epochs=100, verbose=0)
 
         y_pred = model.predict(x_test, verbose=0)
         y_pred = y_pred.astype("float64")
